@@ -7,16 +7,20 @@
 
 import { TextDocument } from "vscode-languageserver";
 
-export interface ILanguageModelCache<T> {
-  get(document: TextDocument): T;
+export interface ILanguageModelCache<Model> {
+  get(document: TextDocument): Model;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }
 
-export function getLanguageModelCache<T>(maxEntries: number,
-                                         cleanupIntervalTimeInSec: number,
-                                         parse: (document: TextDocument) => T): ILanguageModelCache<T> {
-  let languageModels: { [uri: string]: { version: number, languageId: string, cTime: number, languageModel: T } } = {};
+export function getLanguageModelCache<Model>(maxEntries: number,
+                                             cleanupIntervalTimeInSec: number,
+                                             parse: (document: TextDocument) => Model): ILanguageModelCache<Model> {
+  let languageModels: {
+    [uri: string]: {
+      version: number, languageId: string, cTime: number, languageModel: Model,
+    },
+  } = {};
   let nModels = 0;
 
   let cleanupInterval: NodeJS.Timer = void 0;
@@ -35,7 +39,7 @@ export function getLanguageModelCache<T>(maxEntries: number,
   }
 
   return {
-    get(document: TextDocument): T {
+    get(document: TextDocument): Model {
       const version = document.version;
       const languageId = document.languageId;
       const languageModelInfo = languageModels[document.uri];

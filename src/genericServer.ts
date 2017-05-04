@@ -12,29 +12,9 @@ import {
   RequestType, SymbolInformation, TextDocument, TextDocuments, WorkspaceEdit,
 } from "vscode-languageserver";
 import { getLanguageModelCache } from "./languageModelCache";
+import { ILanguageService } from "./languageService";
 
-// import { getLanguageService, LanguageSettings, LanguageService } from 'vscode-geenr-languageservice';
-
-export interface ILanguageService<Doc, Settings> {
-  configure(raw: Settings): void;
-  parseDocument(document: TextDocument): Doc;
-  doValidation(document: TextDocument, parsed: Doc): Diagnostic[];
-  doComplete(document: TextDocument, position: Position, parsed: Doc): CompletionList;
-  doHover(document: TextDocument, position: Position, parsed: Doc): Hover;
-  findDefinition(document: TextDocument, position: Position, parsed: Doc): Location;
-  findReferences(document: TextDocument, position: Position, parsed: Doc): Location[];
-  findDocumentHighlights(document: TextDocument, position: Position, parsed: Doc): DocumentHighlight[];
-  findDocumentSymbols(document: TextDocument, parsed: Doc): SymbolInformation[];
-  doCodeActions(document: TextDocument, range: Range, context: CodeActionContext, parsed: Doc): Command[];
-  doRename(document: TextDocument, position: Position, newName: string, parsed: Doc): WorkspaceEdit;
-}
-export interface ILanguageSettings {
-  validate?: boolean;
-  lint?: any;
-}
-
-export class ServerBase<Doc, Settings> {
-
+export class ServerBase<Model, Settings> {
   public validationDelayMs = 200;
 
   // Create a connection for the server.
@@ -42,11 +22,11 @@ export class ServerBase<Doc, Settings> {
   // Create a simple text document manager. The text document manager
   // supports full document sync only
   private documents: TextDocuments = new TextDocuments();
-  private model: { [uri: string]: Doc } = {};
+  private model: { [uri: string]: Model } = {};
 
   private pendingValidationRequests: { [uri: string]: NodeJS.Timer } = {};
 
-  private languageService: ILanguageService<Doc, Settings>;
+  private languageService: ILanguageService<Model, Settings>;
 
   public init() {
     this.connection = createConnection();
@@ -57,7 +37,7 @@ export class ServerBase<Doc, Settings> {
     // for open, change and close text document events
     this.documents.listen(this.connection);
 
-    const stylesheets = getLanguageModelCache<Doc>(10, 60,
+    const stylesheets = getLanguageModelCache<Model>(10, 60,
       (document) => this.getLanguageService(document).parseDocument(document));
     this.documents.onDidClose((e) => {
       stylesheets.onDocumentRemoved(e.document);
