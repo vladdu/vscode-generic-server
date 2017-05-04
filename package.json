@@ -17,13 +17,16 @@
     "scripts": {
         "clean": "rimraf lib",
         "lint": "tslint --force --format verbose \"src/**/*.ts\"",
-        "build": "npm run clean && npm run lint && echo Using TypeScript && tsc --version && tsc --pretty",
+        "build": "npm run clean && npm run lint && tsc --pretty",
         "test": "npm run build && mocha --compilers ts:ts-node/register --recursive \"test/**/*-spec.ts\"",
         "coverage": "nyc --include=\"src/**/*.ts\" --reporter=text --reporter=html --reporter=lcov mocha --compilers ts:ts-node/register --recursive \"test/**/*-spec.ts\"",
         "watch": "npm run build -- --watch",
         "watch:test": "npm run test -- --watch"
     },
-    "dependencies": {},
+    "dependencies": {
+        "vscode-css-languageservice": "^2.0.3",
+        "vscode-languageserver": "^3.2.0"
+    },
     "devDependencies": {
         "@types/chai": "^3.0.0",
         "@types/mocha": "^2.0.0",
